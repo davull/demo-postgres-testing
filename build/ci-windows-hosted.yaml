@@ -12,12 +12,19 @@ variables:
     value: ./src/Demo.Lib.Tests/Demo.Lib.Tests.csproj
 
 # https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted
+# https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
 pool:
   vmImage: "windows-latest"
 
 steps:
   - checkout: self
     displayName: "Checkout repository"
+
+  - task: CmdLine@2
+    displayName: "Start PostgreSQL"
+    inputs:
+      script: |
+        "C:\Program Files\PostgreSQL\14\bin\pg_ctl.exe" start -D "C:\Program Files\PostgreSQL\14\data" -w
 
   # Use .NET 8.x
   - task: UseDotNet@2
