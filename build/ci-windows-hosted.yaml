@@ -20,33 +20,38 @@ steps:
   - checkout: self
     displayName: "Checkout repository"
 
-  # Download TimescaleDB
+  # Install TimescaleDB
   - task: PowerShell@2
-    displayName: "Download TimescaleDB"
+    displayName: "Install TimescaleDB"
     inputs:
       targetType: "inline"
       script: |
 
-        echo Download TimescaleDB
+        echo "Download TimescaleDB"
 
         Invoke-WebRequest `
           -Uri https://github.com/timescale/timescaledb/releases/download/2.17.1/timescaledb-postgresql-14-windows-amd64.zip `
           -OutFile timescaledb.zip
         Expand-Archive timescaledb.zip -DestinationPath $(Build.ArtifactStagingDirectory)
 
-        echo Copy TimescaleDB files
+        echo "Copy TimescaleDB files"
 
         $pgDir = "C:\Program Files\PostgreSQL\14"
         Copy-Item "$(Build.ArtifactStagingDirectory)\timescaledb\timescaledb.control" "$pgDir\share\extension\"
         Copy-Item "$(Build.ArtifactStagingDirectory)\timescaledb\timescaledb.dll" "$pgDir\lib\"
         Copy-Item "$(Build.ArtifactStagingDirectory)\timescaledb\timescaledb--*.sql" "$pgDir\share\extension\"
 
-  # Start PostgreSQL
-  - task: CmdLine@2
-    displayName: "Start PostgreSQL"
-    inputs:
-      script: |
-        "C:\Program Files\PostgreSQL\14\bin\pg_ctl.exe" start -D "C:\Program Files\PostgreSQL\14\data" -w
+        echo "Configure PostgreSQL"
+
+        $configFile = "$pgDir\data\postgresql.conf"
+        (Get-Content $configFile) -replace '#shared_preload_libraries = ''', 'shared_preload_libraries = ''timescaledb''' | Set-Content $configFile
+
+        echo "Start PostgreSQL"
+        "$pgDir\bin\pg_ctl.exe" start -D "$pgDir\data" -w
+
+        echo "Enable TimescaleDB Extension"
+
+        "$pgDir\bin\psql.exe" -U postgres -c "CREATE EXTENSION IF NOT EXISTS timescaledb;" -d postgres
 
   # Use .NET 8.x
   - task: UseDotNet@2
