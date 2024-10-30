@@ -9,12 +9,24 @@ namespace Demo.Lib.Tests;
 public class DatabaseTests
 {
     private const int DatabasePort = 5432;
-    private const string Password = "dwskol4j34jm32wdsa";
+    private const string ContainerPassword = "dwskol4j34jm32wdsa";
 
-    private IContainer _container = null!;
+    private IContainer? _container;
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
+    {
+        if(IsWindows)
+        {
+            SetupWindowsEnvironment();
+        }
+        else
+        {
+            await SetupLinuxEnvironment();
+        }
+    }
+
+    private async Task SetupLinuxEnvironment()
     {
         _container = CreateTestContainer();
         await _container.StartAsync();
@@ -25,14 +37,29 @@ public class DatabaseTests
         Environment.SetEnvironmentVariable(Config.HostKey, host);
         Environment.SetEnvironmentVariable(Config.PortKey, $"{port}");
         Environment.SetEnvironmentVariable(Config.UsernameKey, "postgres");
-        Environment.SetEnvironmentVariable(Config.PasswordKey, Password);
+        Environment.SetEnvironmentVariable(Config.PasswordKey, ContainerPassword);
+    }
+
+    private static void SetupWindowsEnvironment()
+    {
+        // See https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
+
+        Environment.SetEnvironmentVariable(Config.HostKey, "localhost");
+        Environment.SetEnvironmentVariable(Config.PortKey, $"{DatabasePort}");
+        Environment.SetEnvironmentVariable(Config.UsernameKey, "postgres");
+        Environment.SetEnvironmentVariable(Config.PasswordKey, "root");
     }
 
     [OneTimeTearDown]
     public async Task OneTimeTearDown()
     {
-        await _container.StopAsync();
+        if(_container != null)
+        {
+            await _container.StopAsync();
+        }
     }
+
+    private static bool IsWindows => Environment.OSVersion.Platform == PlatformID.Win32NT;
 
     private static IContainer CreateTestContainer()
     {
@@ -40,7 +67,7 @@ public class DatabaseTests
             .WithImage("postgres:17")
             .WithPortBinding(DatabasePort, true)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(DatabasePort))
-            .WithEnvironment("POSTGRES_PASSWORD", Password)
+            .WithEnvironment("POSTGRES_PASSWORD", ContainerPassword)
             .WithAutoRemove(true);
         return builder.Build();
     }
