@@ -64,7 +64,8 @@ public class DatabaseTests
     private static IContainer CreateTestContainer()
     {
         var builder = new ContainerBuilder()
-            .WithImage("postgres:17")
+            //.WithImage("postgres:17")
+            .WithImage("timescale/timescaledb:latest-pg16")
             .WithPortBinding(DatabasePort, true)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(DatabasePort))
             .WithEnvironment("POSTGRES_PASSWORD", ContainerPassword)
@@ -200,5 +201,18 @@ public class DatabaseTests
         await Database.Instantiate(connection,databaseName,schemaName);
         await Database.Instantiate(connection,databaseName,schemaName);
         await Database.Instantiate(connection,databaseName,schemaName);
+    }
+
+    [TestCase("plpgsql", true)]
+    [TestCase("unknown", false)]
+    [TestCase("timescaledb", true)]
+    public async Task ExtensionExists_ReturnsExpected(
+        string extensionName, bool expected)
+    {
+        using var connection = Database.GetConnection();
+
+        var actual = await Database.ExtensionExists(connection, extensionName);
+
+        actual.Should().Be(expected);
     }
 }

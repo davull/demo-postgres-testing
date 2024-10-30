@@ -6,7 +6,7 @@ namespace Demo.Lib;
 
 public static class Database
 {
-    public static IDbConnection GetConnection(string? databaseName = null)
+    public static IDbConnection GetConnection()
     {
         var connectionStringBuilder = new NpgsqlConnectionStringBuilder
         {
@@ -14,7 +14,6 @@ public static class Database
             Port = Config.Port,
             Username = Config.Username,
             Password = Config.Password,
-            Database = databaseName,
             BrowsableConnectionString = false
         };
         var connectionString = connectionStringBuilder.ConnectionString;
@@ -64,7 +63,20 @@ public static class Database
         var result = await connection.ExecuteScalarAsync<bool>(
             sql, new { databaseName });
         return result;
+    }
 
+    public static async Task<bool> ExtensionExists(
+        IDbConnection connection, string extensionName)
+    {
+        const string sql = """
+                           SELECT count(*) > 0
+                           FROM pg_extension
+                           WHERE extname = @extensionName;
+                           """;
+
+        var result = await connection.ExecuteScalarAsync<bool>(
+            sql, new { extensionName });
+        return result;
     }
 
     public static async Task<bool> SchemaExists(IDbConnection connection,
