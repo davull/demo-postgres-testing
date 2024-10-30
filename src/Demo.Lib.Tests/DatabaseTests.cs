@@ -124,4 +124,50 @@ public class DatabaseTests
         exists = await Database.DatabaseExists(connection, databaseName);
         exists.Should().BeFalse();
     }
+
+    [TestCase("postgres", "public", true)]
+    [TestCase("postgres", "unknown", false)]
+    public async Task SchemaExists_ReturnsExpected(string databaseName,
+        string schemaName, bool expected)
+    {
+        using var connection = Database.GetConnection();
+
+        var actual = await Database.SchemaExists(connection, databaseName, schemaName);
+
+        actual.Should().Be(expected);
+    }
+
+    [Test]
+    public async Task CreateSchema_CreatesSchema()
+    {
+        using var connection = Database.GetConnection();
+
+        var databaseName = $"test_database_{Guid.NewGuid():N}";
+        var schemaName = $"test_schema_{Guid.NewGuid():N}";
+
+        await Database.CreateDatabase(connection, databaseName);
+
+        var exists = await Database.SchemaExists(connection, databaseName, schemaName);
+        exists.Should().BeFalse();
+
+        await Database.CreateSchema(connection, databaseName, schemaName);
+
+        exists = await Database.SchemaExists(connection, databaseName, schemaName);
+        exists.Should().BeTrue();
+    }
+
+    [TestCase("postgres", "pg_catalog", "pg_statistic", true)]
+    [TestCase("postgres", "pg_catalog", "pg_roles", false)]
+    [TestCase("postgres", "pg_catalog", "unknown", false)]
+    [TestCase("postgres", "unknown", "pg_statistic", false)]
+    public async Task TableExists_ReturnsExpected(string databaseName,
+        string schemaName, string tableName, bool expected)
+    {
+        using var connection = Database.GetConnection();
+
+        var actual = await Database.TableExists(connection,
+            databaseName, schemaName, tableName);
+
+        actual.Should().Be(expected);
+    }
 }
