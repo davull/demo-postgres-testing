@@ -1,4 +1,6 @@
 ﻿using System.Data;
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -6,13 +8,41 @@ namespace Demo.Lib.Tests;
 
 public class DatabaseTests
 {
-    [SetUp]
-    public void SetUp()
+    private const int DatabasePort = 5432;
+    private const string Password = "dwskol4j34jm32wdsa";
+
+    private IContainer _container;
+
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
     {
-        Environment.SetEnvironmentVariable(Config.HostKey, "localhost");
-        Environment.SetEnvironmentVariable(Config.PortKey, "5432");
+        _container = CreateTestContainer();
+        await _container.StartAsync();
+
+        var host = _container.Hostname;
+        var port = _container.GetMappedPublicPort(DatabasePort);
+
+        Environment.SetEnvironmentVariable(Config.HostKey, host);
+        Environment.SetEnvironmentVariable(Config.PortKey, $"{port}");
         Environment.SetEnvironmentVariable(Config.UsernameKey, "postgres");
-        Environment.SetEnvironmentVariable(Config.PasswordKey, "AbC123!");
+        Environment.SetEnvironmentVariable(Config.PasswordKey, Password);
+    }
+
+    [OneTimeTearDown]
+    public async Task OneTimeTearDown()
+    {
+        await _container.StopAsync();
+    }
+
+    private static IContainer CreateTestContainer()
+    {
+        var builder = new ContainerBuilder()
+            .WithImage("postgres:17")
+            .WithPortBinding(DatabasePort, true)
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(DatabasePort))
+            .WithEnvironment("POSTGRES_PASSWORD", Password)
+            .WithAutoRemove(true);
+        return builder.Build();
     }
 
     [Test]

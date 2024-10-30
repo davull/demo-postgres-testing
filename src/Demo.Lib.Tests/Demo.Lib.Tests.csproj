@@ -8,6 +8,7 @@
     <PackageReference Include="NUnit.ConsoleRunner" />
     <PackageReference Include="NUnit3TestAdapter" />
     <PackageReference Include="Snapshooter.NUnit" />
+    <PackageReference Include="Testcontainers" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Demo.Lib\Demo.Lib.csproj" />
