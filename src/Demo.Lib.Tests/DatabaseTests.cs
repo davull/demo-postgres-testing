@@ -170,4 +170,35 @@ public class DatabaseTests
 
         actual.Should().Be(expected);
     }
+
+    [Test]
+    public async Task Instantiate_Should_CreateDatabaseSchemaAndTable()
+    {
+        using var connection = Database.GetConnection();
+
+        var databaseName = $"test_database_{Guid.NewGuid():N}";
+        var schemaName = $"test_schema_{Guid.NewGuid():N}";
+        await Database.Instantiate(connection,databaseName,schemaName);
+
+        var exists = await Database.DatabaseExists(connection, databaseName);
+        exists.Should().BeTrue();
+
+        exists = await Database.SchemaExists(connection, databaseName, schemaName);
+        exists.Should().BeTrue();
+
+        exists = await Database.TableExists(connection, databaseName, schemaName, "sensor_values");
+        exists.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task Calling_Instantiate_Multiple_Times()
+    {
+        using var connection = Database.GetConnection();
+
+        var databaseName = $"test_database_{Guid.NewGuid():N}";
+        var schemaName = $"test_schema_{Guid.NewGuid():N}";
+        await Database.Instantiate(connection,databaseName,schemaName);
+        await Database.Instantiate(connection,databaseName,schemaName);
+        await Database.Instantiate(connection,databaseName,schemaName);
+    }
 }

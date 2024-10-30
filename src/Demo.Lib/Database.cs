@@ -38,6 +38,18 @@ public static class Database
             await CreateSchema(connection, databaseName, schemaName);
         }
 
+        if (await TableExists(connection, databaseName, schemaName, "sensor_values") is false)
+        {
+            var sql = $"""
+                      create table {schemaName}.sensor_values (
+                          id serial primary key,
+                          sensor_id integer not null,
+                          value double precision not null,
+                          created_at timestamp with time zone not null
+                      );
+                      """;
+            await connection.ExecuteAsync(sql);
+        }
     }
 
     public static async Task<bool> DatabaseExists(
