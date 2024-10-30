@@ -46,12 +46,19 @@ steps:
         $configFile = "$pgDir\data\postgresql.conf"
         (Get-Content $configFile) -replace '#shared_preload_libraries = ''', 'shared_preload_libraries = ''timescaledb''' | Set-Content $configFile
 
-        echo "Start PostgreSQL"
-        "$pgDir\bin\pg_ctl.exe" start -D "$pgDir\data" -w
+  # Start PostgreSQL
+  - task: CmdLine@2
+    displayName: "Start PostgreSQL"
+    inputs:
+      script: |
+        "C:\Program Files\PostgreSQL\14\bin\pg_ctl.exe" start -D "C:\Program Files\PostgreSQL\14\data" -w
 
-        echo "Enable TimescaleDB Extension"
-
-        "$pgDir\bin\psql.exe" -U postgres -c "CREATE EXTENSION IF NOT EXISTS timescaledb;" -d postgres
+  # Enable TimescaleDB Extension
+  - task: CmdLine@2
+    displayName: "Enable TimescaleDB Extension"
+    inputs:
+      script: |
+        "C:\Program Files\PostgreSQL\14\bin\psql.exe" -U postgres -c "CREATE EXTENSION IF NOT EXISTS timescaledb;" -d postgres
 
   # Use .NET 8.x
   - task: UseDotNet@2
