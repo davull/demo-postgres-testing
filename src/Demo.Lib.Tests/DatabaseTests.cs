@@ -11,7 +11,7 @@ public class DatabaseTests
     private const int DatabasePort = 5432;
     private const string Password = "dwskol4j34jm32wdsa";
 
-    private IContainer _container;
+    private IContainer _container = null!;
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
