@@ -49,7 +49,7 @@ steps:
         Get-Content $configFile
         echo "---------------------------------------------------------------------"
 
-        (Get-Content $configFile) -replace '#shared_preload_libraries = ''', 'shared_preload_libraries = ''timescaledb''' | Set-Content $configFile
+        (Get-Content $configFile) -replace "#shared_preload_libraries = ''", "shared_preload_libraries = 'timescaledb'" | Set-Content $configFile
 
   # Start PostgreSQL
   - task: CmdLine@2
