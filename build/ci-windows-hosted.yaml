@@ -38,17 +38,12 @@ steps:
 
         $pgDir = "C:\Program Files\PostgreSQL\14"
         Copy-Item "$(Build.ArtifactStagingDirectory)\timescaledb\timescaledb.control" "$pgDir\share\extension\"
-        Copy-Item "$(Build.ArtifactStagingDirectory)\timescaledb\timescaledb.dll" "$pgDir\lib\"
+        Copy-Item "$(Build.ArtifactStagingDirectory)\timescaledb\*.dll" "$pgDir\lib\"
         Copy-Item "$(Build.ArtifactStagingDirectory)\timescaledb\timescaledb--*.sql" "$pgDir\share\extension\"
 
         echo "Configure PostgreSQL"
 
         $configFile = "$pgDir\data\postgresql.conf"
-
-        echo "postgresql.conf -----------------------------------------------------"
-        Get-Content $configFile
-        echo "---------------------------------------------------------------------"
-
         (Get-Content $configFile) -replace "#shared_preload_libraries = ''", "shared_preload_libraries = 'timescaledb'" | Set-Content $configFile
 
   # Start PostgreSQL
