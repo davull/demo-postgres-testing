@@ -52,12 +52,6 @@ steps:
     inputs:
       script: |
         "C:\Program Files\PostgreSQL\14\bin\pg_ctl.exe" start -D "C:\Program Files\PostgreSQL\14\data" -w
-
-  # Enable TimescaleDB Extension
-  - task: CmdLine@2
-    displayName: "Enable TimescaleDB Extension"
-    inputs:
-      script: |
         "C:\Program Files\PostgreSQL\14\bin\psql.exe" -U postgres -c "CREATE EXTENSION IF NOT EXISTS timescaledb;" -d postgres
 
   # Use .NET 8.x
