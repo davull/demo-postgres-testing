@@ -44,6 +44,11 @@ steps:
         echo "Configure PostgreSQL"
 
         $configFile = "$pgDir\data\postgresql.conf"
+
+        echo "postgresql.conf -----------------------------------------------------"
+        Get-Content $configFile
+        echo "---------------------------------------------------------------------"
+
         (Get-Content $configFile) -replace '#shared_preload_libraries = ''', 'shared_preload_libraries = ''timescaledb''' | Set-Content $configFile
 
   # Start PostgreSQL
