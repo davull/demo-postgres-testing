@@ -1,0 +1,61 @@
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/repos/azure-repos-git
+trigger:
+  branches:
+    include:
+      - main
+
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/build/variables
+variables:
+  - name: Projects
+    value: "src/*/*.csproj"
+  - name: TestProjects
+    value: ./src/Demo.Lib.Tests/Demo.Lib.Tests.csproj
+
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted
+pool:
+  vmImage: "ubuntu-latest"
+
+steps:
+  - checkout: self
+    displayName: "Checkout repository"
+
+  # Use .NET 8.x
+  - task: UseDotNet@2
+    displayName: "Use .NET 8.x"
+    inputs:
+      packageType: sdk
+      version: 8.x
+
+  # Install docker cli
+  # https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/docker-installer-v0
+  # https://github.com/docker/cli/tags
+  - task: DockerInstaller@0
+    displayName: "Install docker cli"
+    inputs:
+      dockerVersion: 26.1.0
+
+  # Dotnet restore
+  # https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/dotnet-core-cli-v2
+  - task: DotNetCoreCLI@2
+    displayName: "Dotnet restore"
+    inputs:
+      command: restore
+      feedsToUse: select
+      includeNuGetOrg: true
+      projects: $(Projects)
+      arguments: "--locked-mode"
+
+  # Dotnet build
+  - task: DotNetCoreCLI@2
+    displayName: "Dotnet build"
+    inputs:
+      command: build
+      projects: $(Projects)
+      arguments: "--configuration Release"
+
+  # Dotnet test
+  - task: DotNetCoreCLI@2
+    displayName: "Dotnet test"
+    inputs:
+      command: test
+      projects: $(TestProjects)
