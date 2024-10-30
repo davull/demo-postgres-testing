@@ -32,7 +32,7 @@ steps:
         Invoke-WebRequest `
           -Uri https://github.com/timescale/timescaledb/releases/download/2.17.1/timescaledb-postgresql-14-windows-amd64.zip `
           -OutFile timescaledb.zip
-        Expand-Archive timescaledb.zip -DestinationPath $(Build.ArtifactStagingDirectory)\timescaledb
+        Expand-Archive timescaledb.zip -DestinationPath $(Build.ArtifactStagingDirectory)
 
         echo Copy TimescaleDB files
 
