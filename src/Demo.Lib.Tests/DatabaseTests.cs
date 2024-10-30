@@ -6,6 +6,15 @@ namespace Demo.Lib.Tests;
 
 public class DatabaseTests
 {
+    [SetUp]
+    public void SetUp()
+    {
+        Environment.SetEnvironmentVariable(Config.HostKey, "localhost");
+        Environment.SetEnvironmentVariable(Config.PortKey, "5432");
+        Environment.SetEnvironmentVariable(Config.UsernameKey, "postgres");
+        Environment.SetEnvironmentVariable(Config.PasswordKey, "AbC123!");
+    }
+
     [Test]
     public void GetConnection_ReturnsConnection()
     {

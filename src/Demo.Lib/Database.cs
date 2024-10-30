@@ -10,10 +10,10 @@ public static class Database
     {
         var connectionStringBuilder = new NpgsqlConnectionStringBuilder
         {
-            Host = "localhost",
-            Port = 5432,
-            Username = "postgres",
-            Password = "AbC123!",
+            Host = Config.Host,
+            Port = Config.Port,
+            Username = Config.Username,
+            Password = Config.Password,
             BrowsableConnectionString = false
         };
         var connectionString = connectionStringBuilder.ConnectionString;
